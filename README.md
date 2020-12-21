@@ -8,7 +8,9 @@ Otherwise, if you wish to customize the design to fit for you needs, you must:
 
 1. download the sources of this page
 
-2. download the original source code for the RHS Stim/Recording Controller from the official Intan website (http://intantech.com/downloads.html?tabSelect=Source)
+2. download the original source code for the RHS Stim/Recording Controller from the official Intan website
+   (http://intantech.com/downloads.html?tabSelect=Source)
+   
    C++ source code: http://intantech.com/files/RhythmStim_API_Release_180814.zip
    FPGA Verilog HDL source code: http://intantech.com/files/RHS2000InterfaceXEM6010_release_180814.zip
 
