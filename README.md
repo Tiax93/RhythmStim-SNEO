@@ -4,7 +4,7 @@ Paper currently under peer-review. These instruction will be updated soon.<br/>
 
 Download the [application.zip](https://github.com/Tiax93/RhythmStim-SNEO/blob/main/RhythmStim-SNEO/application.zip) file if you just want to run the modified version.<br/>
 
-Otherwise, if you wish to customize the design to fit for you needs, you must:<br/>
+Otherwise, if you wish to customize the design to fit for you needs, you must:
 1. download the sources of this page
 2. download the original source code for the RHS Stim/Recording Controller from the [official Intan website](http://intantech.com/downloads.html?tabSelect=Source)<br/>
 [C++ source code](http://intantech.com/files/RhythmStim_API_Release_180814.zip)<br/>
