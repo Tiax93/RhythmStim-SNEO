@@ -13,7 +13,7 @@ Otherwise, if you wish to customize the design to fit for you needs, you must:
 4. open the Xilinx ISE project from Intan website and import the new file contained in the xise_files folder, overwriting the existing files
 5. modify whatever you needs<br/>
 5a. if you modified the C++ source code, recompile the qt project<br/>
-5b. if you modified the Verilog or VHDL code, re-generate the bitfile and copy it in the building folder of the C++ code or replace it in the application/release folder<br/>
+5b. if you modified the Verilog or VHDL code, re-generate the bitfile and copy it in the building folder of the C++ code or replace it in the application/release folder if you did not modified the C++ code<br/>
 
 Use the Compile_standalone.bat in the qt_files folder to be able to run the application outside the QT editor.<br/>
 <br/>
