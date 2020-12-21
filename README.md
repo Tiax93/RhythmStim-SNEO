@@ -2,7 +2,7 @@
 Low-latency SNEO-based spike detector for IntanTech RHS Stim/Recording System.<br/>
 Paper currently under peer-review. These instruction will be updated soon.<br/>
 
-Download the [application.zip](https://github.com/Tiax93/RhythmStim-SNEO/blob/main/RhythmStim-SNEO/application.zip) file if you just want to run the modified version.<br/>
+Download the [application.zip](https://github.com/Tiax93/RhythmStim-SNEO/tree/main/RhythmStim-SNEO/application) file if you just want to run the modified version.<br/>
 
 Otherwise, if you wish to customize the design to fit for you needs, you must:
 1. download the sources of this page
