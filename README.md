@@ -6,7 +6,7 @@ Details about technology, implementation, algorithms and performances can be fou
 
 ## Quick Start
 Download and run the IntanStimRecordController in the [application](https://github.com/Tiax93/RhythmStim-SNEO/tree/main/RhythmStim-SNEO/application) folder if you just want to use the modified version. No need to touch anything, it includes all what you need. **Connect your headstage on port D** and enjoy a reliable spike detector on your RHS system.<br/>
-If you want to deeply adapt this design or the application for your needs, jump to the **custom installation** section for some advice. You are free to take the code in this project and adapt it to another recording system, just please cite me :)
+If you want to deeply adapt this design or the application for your needs, jump to the **custom installation** section for some advice. You are free to take the code in this project and adapt it to another recording system.
 
 ## What it is included
 This spike detector run on the FPGA of your Intan RHS system and use the High-Speed port on the back of your system to communicate details about each detection in less than one-millisecond from the biological event. Furthermore, it provides an additional window to the Intan GUI you are used to, that gives a real-time feedback on the spiking activity that you are recording.<br/>
@@ -33,10 +33,12 @@ If you wish to customize the design to fit for your needs:
 1. if you modified the C++ source code, recompile the qt project and use the Compile_standalone.bat in the qt_files folder to allow the application to run outside the QT editor.
 1. if you modified the Verilog or VHDL code, re-generate the bitfile and copy it in the building folder of the C++ code or replace it in the application/release folder if you did not modified the C++ code
 
+Feel free to use this code to improve it and/or to adapt it to other device. Just remember to cite my work :)
+
 ## Project related
 
 ### How to read the _HW_detections.rhs files
-These files contain the detected activity and can be imported in Matlab using the [read_Intan_RHS2000_HW_detections.m]() Matlab function.<br/>
+These files contain the detected activity and can be imported in Matlab using the [read_Intan_RHS2000_events.m](https://github.com/Tiax93/RhythmStim-SNEO/blob/main/RhythmStim-SNEO/read_Intan_RHS2000_events.m) Matlab function.<br/>
 Data is imported in Matlab as a cell array where the index is the channel. Each cell contains the amplitude, the timing, and the threshold multiplier at that event.
 
 ### Communication Packet structures
