@@ -55,12 +55,12 @@ Data is sent in little-endian via UART protocol without parity at 8 Data bits as
 Timestamp |  Channel  | Amplitude
 
 The pin used for the UART communication is the 28th of the high-speed I/O port on the back of the recording unit (LVDS_1_P in the image below).
-![Expansion_port](Expansion_port.png)
+![Expansion_port](imgs/Expansion_port.png)
 
 ## Example screen
 <br/>
 
-![SpikeDetector GIF](SpikeDetector.gif)
+![SpikeDetector GIF](imgs/SpikeDetector.gif)
 
 <br/>
 
