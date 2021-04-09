@@ -53,6 +53,7 @@ Data is sent in little-endian via UART protocol without parity at 8 Data bits as
   27-bit  |   5-bit   |  16-bit 
 ----------|-----------|----------
 Timestamp |  Channel  | Amplitude
+
 The pin used for the UART communication is the 28th of the high-speed I/O port on the back of the recording unit.
 ![Expansion_port](Expansion_port.png)
 
