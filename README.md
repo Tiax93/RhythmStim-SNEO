@@ -10,14 +10,14 @@ If you want to deeply adapt this design or the application for your needs, jump 
 
 ## What it is included
 This spike detector run on the FPGA of your Intan RHS system and use the High-Speed port on the back of your system to communicate details about each detection in less than one-millisecond from the biological event. Furthermore, it provides an additional window to the Intan GUI you are used to, that gives a real-time feedback on the spiking activity that you are recording.<br/>
-From this window you can run the detector, select the threshold sensitivity and which channels to monitor. But you can set the forward of the detected events via network to any IP via UDP protocol. But you can also tune the duration of the blind windows that avoid you to detect the stimulation artifact as events.
+From this window you can run the detector, select the threshold sensitivity and which channels to monitor. But you can set the forward of the detected events via network to any IP via UDP protocol. But you can also tune the duration of the blind windows, that avoid you to detect the stimulation artifact as events.
 
 ### Yes, but what it is included *in details*
 * a 3<sup>rd</sup> order Butterworth high-pass IIR filter cutting frequencies below 300 Hz
 * a Savitzky-Golay smoothing filter, fitting the high-pass filtered signal with a 2<sup>nd</sup> degree polynomial and acting as a low-pass filter (3kHz)
 * a point-by-point signal energy estimation with the SNEO, that evaluates both the frequency and the amplitude of the voltage fluctuations against a threshold
-* a dynamic per-channel threshold, continuously estimated from the RMS of the SNEO output, that accommodates for any drift of the probe or changes in the signal quality and rapidly converges to a firing-independent value. You can tune the sensitivity of this threshold to be able to detect both the Multi Unit Activity and/or the single Action Potential.
-* a post-ICMS blinding window, to prevent the detection of events caused by the stimulation artifact.
+* a dynamic per-channel threshold, continuously estimated from the RMS of the SNEO output, that accommodates for any drift of the probe or changes in the signal quality and rapidly converges to a firing-independent value. You can tune the sensitivity of this threshold to detect for both the Multi Unit Activity and/or the single Action Potential.
+* a post-ICMS blinding window, to prevent the detection of false-events caused by the stimulation artifact.
 * a USB stream to the Intan application on the host computer to show the real-time events plot and to store the file on disk
 * a sub-milliseconds latency wired output giving the detections amplitude, channel, and timing details via UART
 * UDP sending of events
