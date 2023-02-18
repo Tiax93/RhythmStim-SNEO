@@ -17,6 +17,7 @@ entity Spike_detector is
            new_samples : in STD_LOGIC;
            th_mult : in STD_LOGIC_VECTOR(7 downto 0);
            blind_window : in STD_LOGIC_VECTOR(7 downto 0);
+		   UART_clk : in STD_LOGIC;
            new_detection : out STD_LOGIC;
            tx_bit : out STD_LOGIC;
            VAL : out STD_LOGIC_VECTOR (15 downto 0);
@@ -60,7 +61,7 @@ architecture Behavioral of Spike_detector is
                done : out std_logic );
         end component;
 	 
-    component thresholding is
+    component MNEO is
         Generic ( channels_number : positive;
                   rms_samples_exp : positive );
         Port ( clk : in std_logic;
@@ -109,7 +110,8 @@ architecture Behavioral of Spike_detector is
     
     component fifo_send_uart is
         port (
-            clk : in STD_LOGIC;
+            wr_clk : in STD_LOGIC;
+            rd_clk : in STD_LOGIC;
             din : in STD_LOGIC_VECTOR(7 DOWNTO 0);
             wr_en : in STD_LOGIC;
             rd_en : in STD_LOGIC;
@@ -200,24 +202,25 @@ begin
 	
     uart_sender : UART_send
         generic map(
-            divider => 100,
+            divider => 625,
             data_width => 8
         )
         port map(
-            clk => clk,
+            clk => UART_clk,
             en => send_uart,
             data => dout_uart_fifo,
             rdy => uart_rdy_snd,
             tx_bit => tx_bit
         );
         
-    uart_fifo_empty_d <= uart_fifo_empty when rising_edge(clk);
+    uart_fifo_empty_d <= uart_fifo_empty when rising_edge(UART_clk);
     send_uart <= '1' when uart_rdy_snd = '1' and uart_fifo_empty_d = '0' else '0';
     rd_uart_fifo <= send_uart;
         
     fifo_uart : fifo_send_uart
         port map(
-            clk => clk,
+            wr_clk => clk,
+			rd_clk => UART_clk,
             din => din_uart_fifo,
             wr_en => wr_uart_fifo,
             rd_en => rd_uart_fifo,
@@ -250,13 +253,13 @@ begin
                channel_out => filtSG_channel,
                done => filtSG_done );
     
-    cmpt_thresholding : thresholding
+    cmpt_MNEO : MNEO
     generic map ( channels_number => channels,
                   rms_samples_exp => rms_samples_exp )
     port map ( clk => clk,
-               en => filtSG_done,
+               en => filtSG_done,filtSG_channel
                res => res,
-               channel_in => filtSG_channel,
+               channel_in => ,
                sample_in => filtSG_data,
                th_mult => th_mult_r,
                busy => MNEO_busy,
@@ -385,8 +388,9 @@ begin
 --                    spikes_step_di <= signed(sample_n);
                     
                     ID_reg <= std_logic_vector(to_unsigned(MNEO_channel, 8));
---                    DT_reg <= std_logic_vector(sample_n - unsigned(pos - spikes_step_do));
-                    DT_reg <= std_logic_vector(timestep_r - unsigned(pos));
+--                    DT_reg <= std_logic_vector(sample_n - unsigned(pos - spikes_step_do)); -- send spikes time difference
+--                    DT_reg <= std_logic_vector(timestep_r - unsigned(pos)); -- send aligned spikes timestamp
+                    DT_reg <= std_logic_vector(timestep_r); -- send spikes timestamp without alignment
 --                    VAL_reg <= std_logic_vector(MNEO_sample_ampl);
                     VAL_reg <= std_logic_vector(min);
                     
@@ -397,27 +401,27 @@ begin
 --                    spikes_step_wr <= '0';
                 end if;
                 
+				-- We agreed on sending MSByte first
+				-- Send in 4 bytes
                 if uart_byte = 1 then
-                    din_uart_fifo <= ID_reg;
                     wr_uart_fifo <= '1';
+                    din_uart_fifo <= &DT_reg(26 downto 19);
                     uart_byte <= 2;
                 elsif uart_byte = 2 then
-                    din_uart_fifo <= DT_reg(7 downto 0);
+                    din_uart_fifo <= DT_reg(18 downto 11);
                     uart_byte <= 3;
                 elsif uart_byte = 3 then
-                    din_uart_fifo <= DT_reg(15 downto 8);
+                    din_uart_fifo <= DT_reg(10 downto 3);
                     uart_byte <= 4;
                 elsif uart_byte = 4 then
-                    din_uart_fifo <= DT_reg(23 downto 16);
-                    uart_byte <= 5;
-                elsif uart_byte = 5 then
-                    din_uart_fifo <= DT_reg(31 downto 24);
-                    uart_byte <= 6;
-                elsif uart_byte = 6 then
-                    din_uart_fifo <= VAL_reg(7 downto 0);
-                    uart_byte <= 7;
-                elsif uart_byte = 7 then
-                    din_uart_fifo <= VAL_reg(15 downto 8);
+                    din_uart_fifo(7 downto 5) <= DT_reg(2 downto 0);
+                    din_uart_fifo(4 downto 0) <= ID_reg(4 downto 0);
+                    -- uart_byte <= 5;
+                -- elsif uart_byte = 5 then
+                    -- din_uart_fifo <= VAL_reg(7 downto 0);
+                    -- uart_byte <= 6;
+                -- elsif uart_byte = 6 then
+                    -- din_uart_fifo <= VAL_reg(15 downto 8);
                     uart_byte <= 0;
                 else
                     wr_uart_fifo <= '0';

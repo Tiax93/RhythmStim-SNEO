@@ -79,11 +79,13 @@ END ENTITY;
 ARCHITECTURE fifo_send_uart_arch OF fifo_send_uart_tb IS
  SIGNAL  status              : STD_LOGIC_VECTOR(7 DOWNTO 0) := "00000000";
  SIGNAL  wr_clk              : STD_LOGIC;
+ SIGNAL  rd_clk              : STD_LOGIC;
  SIGNAL  reset 	             : STD_LOGIC;
  SIGNAL  sim_done            : STD_LOGIC := '0';
  SIGNAL  end_of_sim          : STD_LOGIC_VECTOR(4 DOWNTO 0) := (OTHERS => '0');
  -- Write and Read clock periods
  CONSTANT wr_clk_period_by_2 : TIME := 200 ns;
+ CONSTANT rd_clk_period_by_2 : TIME := 100 ns;
  -- Procedures to display strings
  PROCEDURE disp_str(CONSTANT str:IN STRING) IS
     variable dp_l : line := null;   
@@ -110,6 +112,16 @@ BEGIN
       WAIT FOR wr_clk_period_by_2;
       wr_clk <= '1'; 
       WAIT FOR wr_clk_period_by_2;
+    END LOOP;
+  END PROCESS;
+
+  PROCESS BEGIN
+    WAIT FOR 200 ns;-- Wait for global reset
+    WHILE 1 = 1 LOOP
+      rd_clk <= '0';
+      WAIT FOR rd_clk_period_by_2;
+      rd_clk <= '1'; 
+      WAIT FOR rd_clk_period_by_2;
     END LOOP;
   END PROCESS;
   
@@ -183,10 +195,11 @@ BEGIN
    GENERIC MAP(
               FREEZEON_ERROR => 0,
  	      TB_STOP_CNT    => 2,
- 	      TB_SEED        => 13 
+ 	      TB_SEED        => 12 
  	      )
   PORT MAP(
-	   CLK           => wr_clk,
+	   WR_CLK        => wr_clk,
+	   RD_CLK        => rd_clk,
 	   RESET         => reset,
 	   SIM_DONE      => sim_done,
            STATUS        => status

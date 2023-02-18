@@ -107,7 +107,7 @@ StimParamDialog::StimParamDialog(StimParameters *parameter, QString nativeChanne
                    << "DIGITAL IN 16" << "ANALOG IN 1" << "ANALOG IN 2" << "ANALOG IN 3" << "ANALOG IN 4"
                    << "ANALOG IN 5" << "ANALOG IN 6" << "ANALOG IN 7" << "ANALOG IN 8" << "UDP EVENT" //"KEYPRESS: 1" //---
                    << "KEYPRESS: 2" << "KEYPRESS: 3" << "KEYPRESS: 4" << "KEYPRESS: 5" << "KEYPRESS: 6"
-                   << "KEYPRESS: 7" << "KEYPRESS: 8";
+                   << "KEYPRESS: 7" << "UART EVENT";//"KEYPRESS: 8";
     triggerSource->addItems(triggerSources);
 
     //triggerEdgeOrLevelLabel = new QLabel(tr("Stimulation is: "));

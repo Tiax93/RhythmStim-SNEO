@@ -22,7 +22,7 @@
 *     devices, or systems.  Use in such applications are expressly             *
 *     prohibited.                                                              *
 *                                                                              *
-*     (c) Copyright 1995-2020 Xilinx, Inc.                                     *
+*     (c) Copyright 1995-2022 Xilinx, Inc.                                     *
 *     All rights reserved.                                                     *
 *******************************************************************************/
 // You must compile the wrapper file fifo_send_uart.v when simulating
@@ -37,7 +37,8 @@
 `timescale 1ns/1ps
 
 module fifo_send_uart(
-  clk,
+  wr_clk,
+  rd_clk,
   din,
   wr_en,
   rd_en,
@@ -46,7 +47,8 @@ module fifo_send_uart(
   empty
 );
 
-input clk;
+input wr_clk;
+input rd_clk;
 input [7 : 0] din;
 input wr_en;
 input rd_en;
@@ -80,9 +82,9 @@ output empty;
     .C_AXIS_TSTRB_WIDTH(4),
     .C_AXIS_TUSER_WIDTH(4),
     .C_AXIS_TYPE(0),
-    .C_COMMON_CLOCK(1),
+    .C_COMMON_CLOCK(0),
     .C_COUNT_TYPE(0),
-    .C_DATA_COUNT_WIDTH(11),
+    .C_DATA_COUNT_WIDTH(10),
     .C_DEFAULT_VALUE("BlankString"),
     .C_DIN_WIDTH(8),
     .C_DIN_WIDTH_AXIS(1),
@@ -149,7 +151,7 @@ output empty;
     .C_HAS_WR_ACK(0),
     .C_HAS_WR_DATA_COUNT(0),
     .C_HAS_WR_RST(0),
-    .C_IMPLEMENTATION_TYPE(0),
+    .C_IMPLEMENTATION_TYPE(2),
     .C_IMPLEMENTATION_TYPE_AXIS(1),
     .C_IMPLEMENTATION_TYPE_RACH(1),
     .C_IMPLEMENTATION_TYPE_RDCH(1),
@@ -197,7 +199,7 @@ output empty;
     .C_PROG_FULL_TYPE_WDCH(0),
     .C_PROG_FULL_TYPE_WRCH(0),
     .C_RACH_TYPE(0),
-    .C_RD_DATA_COUNT_WIDTH(11),
+    .C_RD_DATA_COUNT_WIDTH(10),
     .C_RD_DEPTH(1024),
     .C_RD_FREQ(1),
     .C_RD_PNTR_WIDTH(10),
@@ -223,12 +225,12 @@ output empty;
     .C_USE_ECC_WRCH(0),
     .C_USE_EMBEDDED_REG(0),
     .C_USE_FIFO16_FLAGS(0),
-    .C_USE_FWFT_DATA_COUNT(1),
+    .C_USE_FWFT_DATA_COUNT(0),
     .C_VALID_LOW(0),
     .C_WACH_TYPE(0),
     .C_WDCH_TYPE(0),
     .C_WR_ACK_LOW(0),
-    .C_WR_DATA_COUNT_WIDTH(11),
+    .C_WR_DATA_COUNT_WIDTH(10),
     .C_WR_DEPTH(1024),
     .C_WR_DEPTH_AXIS(1024),
     .C_WR_DEPTH_RACH(16),
@@ -248,7 +250,8 @@ output empty;
     .C_WRCH_TYPE(0)
   )
   inst (
-    .CLK(clk),
+    .WR_CLK(wr_clk),
+    .RD_CLK(rd_clk),
     .DIN(din),
     .WR_EN(wr_en),
     .RD_EN(rd_en),
@@ -257,11 +260,10 @@ output empty;
     .EMPTY(empty),
     .BACKUP(),
     .BACKUP_MARKER(),
+    .CLK(),
     .RST(),
     .SRST(),
-    .WR_CLK(),
     .WR_RST(),
-    .RD_CLK(),
     .RD_RST(),
     .PROG_EMPTY_THRESH(),
     .PROG_EMPTY_THRESH_ASSERT(),

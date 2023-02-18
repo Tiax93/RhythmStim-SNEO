@@ -1,8 +1,3 @@
-#--------------------------------------------------------------------------------
-#--
-#-- FIFO Generator Core Demo Testbench 
-#--
-#--------------------------------------------------------------------------------
 # (c) Copyright 2009 - 2010 Xilinx, Inc. All rights reserved.
 # 
 # This file contains confidential and proprietary information
@@ -48,28 +43,26 @@
 # 
 # THIS COPYRIGHT NOTICE AND DISCLAIMER MUST BE RETAINED AS
 # PART OF THIS FILE AT ALL TIMES.
-# Filename: vcs_session.tcl
-#
-# Description:
-#   This is the VCS wave form file.
-#
 #--------------------------------------------------------------------------------
-if { ![gui_is_db_opened -db {fifo_send_uart.vpd}] } {
-	gui_open_db -design V1 -file fifo_send_uart.vpd -nosource
-}
-gui_set_precision 1ps
-gui_set_time_units 1ps
+rm -rf simv* csrc DVEfiles AN.DB
 
-gui_open_window Wave
-gui_sg_create fifo_send_uart_Group
-gui_list_add_group -id Wave.1 {fifo_send_uart_Group}
+echo "Compiling Core Verilog UNISIM/Behavioral model"
+vlogan +v2k  ../../../fifo_send_uart.v
+vhdlan  ../../example_design/fifo_send_uart_exdes.vhd
 
-gui_sg_addsignal -group fifo_send_uart_Group  WRITE -divider
-gui_sg_addsignal -group fifo_send_uart_Group /fifo_send_uart_tb/fifo_send_uart_synth_inst/fifo_send_uart_inst/WR_CLK
-gui_sg_addsignal -group fifo_send_uart_Group /fifo_send_uart_tb/fifo_send_uart_synth_inst/fifo_send_uart_inst/WR_EN
-gui_sg_addsignal -group fifo_send_uart_Group /fifo_send_uart_tb/fifo_send_uart_synth_inst/fifo_send_uart_inst/FULL
-gui_sg_addsignal -group fifo_send_uart_Group  READ -divider
-gui_sg_addsignal -group fifo_send_uart_Group /fifo_send_uart_tb/fifo_send_uart_synth_inst/fifo_send_uart_inst/RD_CLK
-gui_sg_addsignal -group fifo_send_uart_Group /fifo_send_uart_tb/fifo_send_uart_synth_inst/fifo_send_uart_inst/RD_EN
-gui_sg_addsignal -group fifo_send_uart_Group /fifo_send_uart_tb/fifo_send_uart_synth_inst/fifo_send_uart_inst/EMPTY
-gui_zoom -window Wave.1 -full
+echo "Compiling Test Bench Files"
+vhdlan   ../fifo_send_uart_pkg.vhd
+vhdlan   ../fifo_send_uart_rng.vhd 
+vhdlan   ../fifo_send_uart_dgen.vhd
+vhdlan   ../fifo_send_uart_dverif.vhd
+vhdlan   ../fifo_send_uart_pctrl.vhd 
+vhdlan   ../fifo_send_uart_synth.vhd 
+vhdlan   ../fifo_send_uart_tb.vhd
+
+echo "Elaborating Design"
+vlogan +v2k $XILINX/verilog/src/glbl.v
+vcs -time_res 1ps +vcs+lic+wait -debug fifo_send_uart_tb glbl
+
+echo "Simulating Design"
+./simv -ucli -i ucli_commands.key
+dve -session vcs_session.tcl

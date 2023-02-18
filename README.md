@@ -1,6 +1,6 @@
 # RhythmStim-SNEO
 This is a low-latency spike detector based on the Smoothed Nonlinear (or Teager) Energy Operator, for electrophysiology signals read by the [RHS Stimulation/Recording System](https://intantech.com/stim_record_controller.html) by [Intan Technologies](https://intantech.com/index.html).<br/>
-Details about technology, implementation, algorithms and performances can be found in the accompanying paper at https://doi.org/10.3390/digital1010003.<br/>
+Details about technology, implementation, algorithms, and performances can be found in the accompanying paper at https://doi.org/10.3390/digital1010003.<br/>
 <br/>
 <p align="center"><img src="https://www.mdpi.com/digital/digital-01-00003/article_deploy/html/images/digital-01-00003-g001-550.jpg"></p>
 
@@ -33,13 +33,13 @@ If you wish to customize the design to fit for your needs:
 1. if you modified the C++ source code, recompile the qt project and use the Compile_standalone.bat in the qt_files folder to allow the application to run outside the QT editor.
 1. if you modified the Verilog or VHDL code, re-generate the bitfile and copy it in the building folder of the C++ code or replace it in the application/release folder if you did not modified the C++ code
 
-Feel free to use this code to improve it and/or to adapt it to other device. Just remember to cite my work :)
+Feel free to use this code, to improve it and/or to adapt it to other devices. Just remember to cite my work :)
 
 ## Project related
 
-### How to read the _HW_detections.rhs files
+### How to read the *_HW_detections.rhs files
 These files contain the detected activity and can be imported in Matlab using the [read_Intan_RHS2000_events.m](https://github.com/Tiax93/RhythmStim-SNEO/blob/main/RhythmStim-SNEO/read_Intan_RHS2000_events.m) Matlab function.<br/>
-Data is imported in Matlab as a cell array where the index is the channel. Each cell contains the amplitude, the timing, and the threshold multiplier at that event.
+Data is imported in Matlab as a structure called "spikes" containing four array called "channel", "sample", "amplitude", and  "threshold_mult", containing respectively the channel, the timing, the amplitude of the spikes, and the threshold multiplier used of every detected spike, ordered by the time of detection.
 
 ### Communication Packet structures
 #### UDP
@@ -50,9 +50,9 @@ Integer 1 | Integer 2 | Integer 3 | Integer 4
 
 #### UART
 Data is sent in little-endian via UART protocol without parity at 8 Data bits as in the table, with a BAUD rate of 1MHz that can be customized in the design. (spike_detector.vhd, line 203).
-  27-bit  |   5-bit   |  16-bit 
-----------|-----------|----------
-Timestamp |  Channel  | Amplitude
+  27-bit  |   5-bit   
+----------|-----------
+Timestamp |  Channel  
 
 The pin used for the UART communication is the 28th of the high-speed I/O port on the back of the recording unit (LVDS_1_P in the image below).
 

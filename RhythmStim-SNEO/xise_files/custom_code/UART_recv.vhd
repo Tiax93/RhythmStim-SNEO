@@ -16,13 +16,12 @@ architecture Behavioral of UART_recv is
     signal rx_reg : std_logic;
     signal clk_cyc : positive := 1;
     signal count : natural := data_width+1;
-    signal parity_bit : std_logic := '0';
+    signal parity_bit : std_logic := '1';
     signal rcvd : std_logic_vector(data_width-1 downto 0);
     
 begin
     
 	process(clk)
-
 	begin
 		if rising_edge(clk) then
             
@@ -52,13 +51,12 @@ begin
                         data <= std_logic_vector(to_signed(33, 8));
                     end if;
                     new_data <= '1';
-                    parity_bit <= '0';
+                    parity_bit <= '1';
                     count <= count+1;
                 end if;
                 
                 clk_cyc <= 1;
             end if;
-            
 		end if;
 	end process;
 

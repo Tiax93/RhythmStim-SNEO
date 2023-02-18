@@ -217,14 +217,16 @@ module main #(
     input   wire [3:0]                              board_mode,
 
     // high-speed LVDS interface (future expansion)
-    output wire                                         LVDS_1_p,
-    output wire                                         LVDS_1_n,
-    input wire                                          LVDS_2_p,
-    input wire                                          LVDS_2_n,
-    input wire                                          LVDS_3_p,
-    input wire                                          LVDS_3_n,
-    output wire                                     LVCMOS_4_p,
-    input wire                                      LVCMOS_4_n,
+    output wire                                         LVDS_1_p, // green - LVDS3.3 tx_bit
+    output wire                                         LVDS_1_n, // green red - LVDS3.3 tx_bit
+    input wire                                          LVDS_2_p, // yellow LVDS3.3
+    input wire                                          LVDS_2_n, // yellow red LVDS3.3
+    input wire                                          LVDS_3_p, // red - LVDS3.3 rx_bit
+    input wire                                          LVDS_3_n, // red blue - LVDS3.3 rx_bit
+    output wire                                     	LVCMOS_4_p, // blue - LVCMOS3.3 tx_bit
+    input wire                                      	LVCMOS_4_n, // blue light - LVCMOS3.3 rx_bit
+    //output wire                                     LVCMOS_5_p, // black
+    //input wire                                      LVCMOS_5_n, // white
     output wire                                     I2C_SDA,
     output wire                                     I2C_SCK
     );
@@ -1155,7 +1157,8 @@ module main #(
         ms_cs_j  = 239;
     
     reg wr_samples_fifo; //---
-    reg to_synch_manual_triggers; //---
+    reg to_synch_stim_triggers; //---
+	reg UART_trigger; // ---
     
     always @(posedge dataclk) begin
         if (reset) begin
@@ -3058,7 +3061,7 @@ module main #(
                     
                     if (channel_MISO <= 6'd15) //---
                         wr_samples_fifo <= 1'b1; //---
-                    to_synch_manual_triggers <= |{stim_on_D1, stim_on_D2}; //ORing
+                    to_synch_stim_triggers <= |{stim_on_D1, stim_on_D2}; //ORing
                     
                 end
 
@@ -3276,7 +3279,8 @@ module main #(
 
     // Stimulation sequencers, digital output sequencer
     wire [31:0] triggers;
-    assign triggers = { manual_triggers[7:0], ADC_triggers, TTL_in };
+
+    assign triggers = { UART_trigger, manual_triggers[6:0], ADC_triggers, TTL_in };
 
     stim_sequencer #(0) stim_sequencer_A1 (.reset(reset), .dataclk(dataclk), .main_state(main_state), .channel(channel),
         .prog_channel(prog_channel), .prog_address(prog_address), .prog_module(prog_module), .prog_word(prog_word), .prog_trig(prog_trig),
@@ -3852,7 +3856,7 @@ module main #(
 
     //--- CUSTOM CODE
     // The AC high-gain amplifier is sampled with 16 bits of resolution;
-    // its value is returned in the high 16 bits of the 32-bit result.
+    // its value is returned in the higher 16 bits of the 32-bit result.
     // If the D flag is set to one then the DC low-gain amplifier of
     // channel C is sampled with 10-bit resolution, and its value
     // is returned in the lower 10 bits of the result.
@@ -3863,6 +3867,13 @@ module main #(
         .O(usr_clk),
         .I(clk1)
     );
+	
+	// Clock for UART
+	wire UART_clk;
+	UART_clocking UART_clocking_inst (
+	  .CLK_IN1(usr_clk), // Clock in ports, 100MHz
+	  .UART_clk(UART_clk) // Clock out ports 72 MHz
+	);
     
     // assign wirein from ti_clk
     wire [7:0] asynch_th_mult;
@@ -3913,7 +3924,7 @@ module main #(
     reg [7:0] blind_window, to_synch_blind_window, synch_blind_window;
     reg [0:31] channels_disabled, synch_channels_disabled;
     reg [1:0] synch_data_streams_en, data_streams_en;
-    reg synch_manual_triggers, stimulation_trigger;
+    reg synch_stim_triggers, stim_trigger;
     
     reg rd_samples_fifo_delay;
     reg new_samples;
@@ -3941,8 +3952,8 @@ module main #(
         synch_data_streams_en <= {data_stream_7_en, data_stream_8_en};
         data_streams_en <= synch_data_streams_en;
         
-        synch_manual_triggers <= to_synch_manual_triggers;
-        stimulation_trigger <= synch_manual_triggers;
+        synch_stim_triggers <= to_synch_stim_triggers;
+        stim_trigger <= synch_stim_triggers;
         
         // manage samples from FIFO for spike detector
         rd_samples_fifo_delay <= rd_samples_fifo;
@@ -3958,7 +3969,6 @@ module main #(
     assign ep3cwireout = channels_disabled[16:31];
     
     wire tx_bit;
-    wire rx_bit;
     wire new_detection;
     wire [15:0] VAL;
     wire [7:0] ID;
@@ -3977,22 +3987,24 @@ module main #(
         .D1(D1),
         .D2(D2),
         //.channel(sd_channel),
-        .stimulation_trigger(stimulation_trigger),
+        .stimulation_trigger(stim_trigger),
         .channels_disabled(channels_disabled), // 0 for active
         .port_en(data_streams_en),
         .new_samples(new_samples),
         .th_mult(th_mult), // threshold multiplicator value *2
         .blind_window(blind_window), // in millisecond (*25000)
-        .tx_bit(tx_bit),
+		.UART_clk(UART_clk),
         .new_detection(new_detection),
+        .tx_bit(tx_bit),
         .VAL(VAL),
         .ID(ID),
-        .DT(DT) );
+        .DT(DT)
+	);
 
+    wire rx_bit;
     assign LVCMOS_4_p = tx_bit;
-    assign LVCMOS_4_n = rx_bit;
+    assign rx_bit = LVCMOS_4_n;// | LVDS_3;
     assign LVDS_1 = tx_bit;
-    assign LVDS_3 = rx_bit; 
 
     // Cross clock domain from spike detector usr_clk to ti_clk and 16bit data reshape for usb FIFO
     wire [15:0] dout_spikes;
@@ -4013,7 +4025,6 @@ module main #(
     );
     
     // FIFO to count data and send it over USB
-    
     wire rd_pipeout;
     wire [15:0] dout_pipeout;
     wire full_pipeout;
@@ -4035,6 +4046,35 @@ module main #(
     assign ep3dwireout[11:0] = (full_pipeout == 1'b1) ? 12'd2048 : {1'b0, data_count};
     
     assign spikes_to_pipeout = !empty_spikes && !full_pipeout;
+	
+	// UART receiver for stimulation trigger
+	wire new_UART_data;
+	wire [7:0] UART_data;
+	UART_recv #(
+        .divider(625), // 115200 Baud-rate = 72MHz/625
+        .data_width(8)
+        )
+    UART_recv_inst (
+		.clk(UART_clk),
+		.rx_bit(rx_bit),
+		.new_data(new_UART_data),
+		.data(UART_data)
+	);
+	
+	// UART_trigger remain high until it can be seen by the stim_sequencer
+	// synch signal from inside the UART_clk to usr_clk
+	reg synch_new_UART_data;
+	reg new_UART_data_pre;
+    always @(posedge dataclk) begin
+		if (channel == 0 && (main_state == 99 || main_state == 100))
+			UART_trigger <= 1'b0;
+		else begin
+			synch_new_UART_data <= new_UART_data;
+			new_UART_data_pre <= synch_new_UART_data;
+			if (new_UART_data_pre == 1'b0 && synch_new_UART_data == 1'b1)
+				UART_trigger <= 1'b1;
+		end
+	end
     
     // PipeOut to communicate spikes
     okPipeOut poa1 (.ok1(ok1), .ok2(ok2x[ 41*17 +: 17 ]), .ep_addr(8'ha1), .ep_read(rd_pipeout), .ep_datain(dout_pipeout));

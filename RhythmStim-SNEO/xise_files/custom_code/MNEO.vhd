@@ -3,7 +3,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 
-entity thresholding is
+entity MNEO is
     Generic ( channels_number : positive;
               rms_samples_exp : positive );
     Port ( clk : in std_logic;
@@ -25,10 +25,10 @@ entity thresholding is
            SNEO1_done : out std_logic;
            new_threshold_val : out signed(31 downto 0);
            new_threshold : out std_logic );
-end thresholding;
+end MNEO;
 
 
-architecture Behavioral of thresholding is
+architecture Behavioral of MNEO is
 	 
     component SNEO is
         Generic ( channels_number : positive;

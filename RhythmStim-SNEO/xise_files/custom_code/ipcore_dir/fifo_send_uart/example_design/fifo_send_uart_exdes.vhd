@@ -73,7 +73,8 @@ use unisim.vcomponents.all;
 --------------------------------------------------------------------------------
 entity fifo_send_uart_exdes is
    PORT (
-           CLK                       : IN  std_logic;
+           WR_CLK                    : IN  std_logic;
+     	   RD_CLK                    : IN  std_logic;
            WR_EN 		     : IN  std_logic;
            RD_EN                     : IN  std_logic;
            DIN                       : IN  std_logic_vector(8-1 DOWNTO 0);
@@ -87,13 +88,15 @@ end fifo_send_uart_exdes;
 
 architecture xilinx of fifo_send_uart_exdes is
 
-  signal clk_i    : std_logic;
+  signal wr_clk_i : std_logic;
+  signal rd_clk_i : std_logic;
 
 
 
   component fifo_send_uart is
    PORT (
-           CLK                       : IN  std_logic;
+           WR_CLK                    : IN  std_logic;
+     	   RD_CLK                    : IN  std_logic;
            WR_EN 		     : IN  std_logic;
            RD_EN                     : IN  std_logic;
            DIN                       : IN  std_logic_vector(8-1 DOWNTO 0);
@@ -105,17 +108,24 @@ architecture xilinx of fifo_send_uart_exdes is
 
 
 begin
-  clk_buf: bufg
+
+  wr_clk_buf: bufg
     PORT map(
-      i => CLK,
-      o => clk_i
+      i => WR_CLK,
+      o => wr_clk_i
       );
 
+  rd_clk_buf: bufg
+    PORT map(
+      i => RD_CLK,
+      o => rd_clk_i
+      );
 
 
   exdes_inst : fifo_send_uart 
     PORT MAP (
-           CLK                       => clk_i,
+           WR_CLK                    => wr_clk_i,
+           RD_CLK                    => rd_clk_i,
            WR_EN 		     => wr_en,
            RD_EN                     => rd_en,
            DIN                       => din,

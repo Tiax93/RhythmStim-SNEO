@@ -1051,8 +1051,10 @@ void WavePlot::drawAxisText(QPainter &painter, int frameNumber)
         case StimParameters::KeyPress7:
             triggerName = "KEY 7";
             break;
-        case StimParameters::KeyPress8:
-            triggerName = "KEY 8";
+        /*case StimParameters::KeyPress8:
+            triggerName = "KEY 8";*/
+        case StimParameters::UARTEvent:
+            triggerName = "UART";
             break;
         default:
             triggerName = "n/a";

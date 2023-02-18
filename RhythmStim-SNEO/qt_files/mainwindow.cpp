@@ -3223,7 +3223,7 @@ void MainWindow::spikeScope()
 void MainWindow::spikeDetector()
 {
     if (!spikeDetectorDialog) {
-        spikeDetectorDialog = new SpikeDetectorDialog(this, evalBoard, synthMode);
+        spikeDetectorDialog = new SpikeDetectorDialog(this, evalBoard, synthMode, boardSampleRate, wavePlot, stimStep);
         connect(spikeDetectorDialog, SIGNAL(aboutToQuit(QObject*)), this, SLOT(spikeDetectorDialogOnExit(QObject*)));
     }
 
@@ -4853,56 +4853,60 @@ void MainWindow::setStimSequenceParameters(Rhs2000EvalBoard *evalBoard, double t
     evalBoard->programStimReg(stream, channel, Rhs2000EvalBoard::EventAmpSettleOffRepeat, eventAmpSettleOffRepeat);
     evalBoard->programStimReg(stream, channel, Rhs2000EvalBoard::EventEnd, eventEnd);
 
-    evalBoard->enableAuxCommandsOnOneStream(stream);
+    if (!evalBoard->isRunning()) {
+        evalBoard->enableAuxCommandsOnOneStream(stream);
 
-    Rhs2000Registers chipRegisters(boardSampleRate, stimStep);
-    int commandSequenceLength;
-    vector<unsigned int> commandList;
+        Rhs2000Registers chipRegisters(boardSampleRate, stimStep);
+        int commandSequenceLength;
+        vector<unsigned int> commandList;
 
-    int firstPhaseAmplitude = (int)(parameters->firstPhaseAmplitude / currentstep_uA + 0.5);
-    int secondPhaseAmplitude = (int)(parameters->secondPhaseAmplitude / currentstep_uA + 0.5);
-    int posMag = (parameters->stimPolarity == StimParameters::PositiveFirst) ? firstPhaseAmplitude : secondPhaseAmplitude;
-    int negMag = (parameters->stimPolarity == StimParameters::NegativeFirst) ? firstPhaseAmplitude : secondPhaseAmplitude;
+        int firstPhaseAmplitude = (int)(parameters->firstPhaseAmplitude / currentstep_uA + 0.5);
+        int secondPhaseAmplitude = (int)(parameters->secondPhaseAmplitude / currentstep_uA + 0.5);
+        int posMag = (parameters->stimPolarity == StimParameters::PositiveFirst) ? firstPhaseAmplitude : secondPhaseAmplitude;
+        int negMag = (parameters->stimPolarity == StimParameters::NegativeFirst) ? firstPhaseAmplitude : secondPhaseAmplitude;
 
-    commandSequenceLength = chipRegisters.createCommandListSetStimMagnitudes(commandList, channel, posMag, 0, negMag, 0);
-    evalBoard->uploadCommandList(commandList, Rhs2000EvalBoard::AuxCmd1);
-    evalBoard->selectAuxCommandLength(Rhs2000EvalBoard::AuxCmd1, 0, commandSequenceLength - 1);
+        commandSequenceLength = chipRegisters.createCommandListSetStimMagnitudes(commandList, channel, posMag, 0, negMag, 0);
+        evalBoard->uploadCommandList(commandList, Rhs2000EvalBoard::AuxCmd1);
+        evalBoard->selectAuxCommandLength(Rhs2000EvalBoard::AuxCmd1, 0, commandSequenceLength - 1);
 
-    chipRegisters.createCommandListDummy(commandList, 8192, chipRegisters.createRhs2000Command(Rhs2000Registers::Rhs2000CommandRegRead, 255));
-    evalBoard->uploadCommandList(commandList, Rhs2000EvalBoard::AuxCmd2);
-    evalBoard->uploadCommandList(commandList, Rhs2000EvalBoard::AuxCmd3);
-    evalBoard->uploadCommandList(commandList, Rhs2000EvalBoard::AuxCmd4);
+        chipRegisters.createCommandListDummy(commandList, 8192, chipRegisters.createRhs2000Command(Rhs2000Registers::Rhs2000CommandRegRead, 255));
+        evalBoard->uploadCommandList(commandList, Rhs2000EvalBoard::AuxCmd2);
+        evalBoard->uploadCommandList(commandList, Rhs2000EvalBoard::AuxCmd3);
+        evalBoard->uploadCommandList(commandList, Rhs2000EvalBoard::AuxCmd4);
 
-    evalBoard->setMaxTimeStep(commandSequenceLength);
-    evalBoard->setContinuousRunMode(false);
-    evalBoard->setStimCmdMode(false);
-    evalBoard->enableAuxCommandsOnOneStream(stream);
+        evalBoard->setMaxTimeStep(commandSequenceLength);
+        evalBoard->setContinuousRunMode(false);
 
-    evalBoard->run();
-    while (evalBoard->isRunning() ) {
-        qApp->processEvents();
+        evalBoard->setStimCmdMode(false);
+        evalBoard->enableAuxCommandsOnOneStream(stream);
+
+        evalBoard->run();
+        while (evalBoard->isRunning() ) {
+            qApp->processEvents();
+        }
+
+        commandSequenceLength = chipRegisters.createCommandListRegisterRead(commandList);
+        evalBoard->uploadCommandList(commandList, Rhs2000EvalBoard::AuxCmd1);
+        evalBoard->selectAuxCommandLength(Rhs2000EvalBoard::AuxCmd1, 0, commandSequenceLength - 1);
+
+        evalBoard->run();
+        while (evalBoard->isRunning() ) {
+            qApp->processEvents();
+        }
+
+        Rhs2000DataBlock* dataBlock = new Rhs2000DataBlock(evalBoard->getNumEnabledDataStreams());;
+        evalBoard->readDataBlock(dataBlock);
+        evalBoard->readDataBlock(dataBlock);
+
+        // chipRegisters.createCommandListDummy(commandList, 8192, chipRegisters.createRhs2000Command(Rhs2000Registers::Rhs2000CommandRegRead, 255));
+        // evalBoard->uploadCommandList(commandList, Rhs2000EvalBoard::AuxCmd1);
+
+        commandSequenceLength = chipRegisters.createCommandListRegisterConfig(commandList, true);
+        evalBoard->uploadCommandList(commandList, Rhs2000EvalBoard::AuxCmd1);
+        evalBoard->selectAuxCommandLength(Rhs2000EvalBoard::AuxCmd1, 0, commandSequenceLength - 1);
+
+        evalBoard->enableAuxCommandsOnAllStreams();
     }
-
-    commandSequenceLength = chipRegisters.createCommandListRegisterRead(commandList);
-    evalBoard->uploadCommandList(commandList, Rhs2000EvalBoard::AuxCmd1);
-    evalBoard->selectAuxCommandLength(Rhs2000EvalBoard::AuxCmd1, 0, commandSequenceLength - 1);
-    evalBoard->run();
-    while (evalBoard->isRunning() ) {
-        qApp->processEvents();
-    }
-
-    Rhs2000DataBlock* dataBlock = new Rhs2000DataBlock(evalBoard->getNumEnabledDataStreams());;
-    evalBoard->readDataBlock(dataBlock);
-    evalBoard->readDataBlock(dataBlock);
-
-    // chipRegisters.createCommandListDummy(commandList, 8192, chipRegisters.createRhs2000Command(Rhs2000Registers::Rhs2000CommandRegRead, 255));
-    // evalBoard->uploadCommandList(commandList, Rhs2000EvalBoard::AuxCmd1);
-
-    commandSequenceLength = chipRegisters.createCommandListRegisterConfig(commandList, true);
-    evalBoard->uploadCommandList(commandList, Rhs2000EvalBoard::AuxCmd1);
-    evalBoard->selectAuxCommandLength(Rhs2000EvalBoard::AuxCmd1, 0, commandSequenceLength - 1);
-
-    evalBoard->enableAuxCommandsOnAllStreams();
 }
 
 void MainWindow::notifyFocusChanged(QWidget *lostFocus, QWidget *gainedFocus)

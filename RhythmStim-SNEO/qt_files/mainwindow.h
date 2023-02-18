@@ -118,6 +118,7 @@ public slots:
     void notifyFocusChanged(QWidget *lostFocus, QWidget *gainedFocus);
     void copyStimParameters();
     void pasteStimParameters();
+    void setStimSequenceParameters(Rhs2000EvalBoard *evalBoard, double timestep_us, double currentstep_uA, int stream, int channel, StimParameters *parameters);
 
 private slots:
     void about();
@@ -190,7 +191,6 @@ private slots:
     void stimParam();
     void setDigitalOutSequenceParameters(Rhs2000EvalBoard *evalBoard, double timestep_us, int channel, StimParameters *parameters);
     void setAnalogOutSequenceParameters(Rhs2000EvalBoard *evalBoard, double timestep_us, int channel, StimParameters *parameters);
-    void setStimSequenceParameters(Rhs2000EvalBoard *evalBoard, double timestep_us, double currentstep_uA, int stream, int channel, StimParameters *parameters);
     void ampSettleSettings();
     void chargeRecoverySettings();
     void spikeDetectorDialogOnExit(QObject *ob); //---

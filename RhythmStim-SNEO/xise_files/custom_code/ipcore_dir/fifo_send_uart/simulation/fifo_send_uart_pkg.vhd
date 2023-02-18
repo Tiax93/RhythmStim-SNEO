@@ -188,7 +188,8 @@ PACKAGE fifo_send_uart_pkg IS
 	   TB_SEED        : INTEGER := 1
 	 );
   PORT(
-	CLK        :  IN  STD_LOGIC;
+	WR_CLK     :  IN  STD_LOGIC;
+	RD_CLK     :  IN  STD_LOGIC;
         RESET      :  IN  STD_LOGIC;
         SIM_DONE   :  OUT STD_LOGIC;
         STATUS     :  OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
@@ -197,7 +198,8 @@ PACKAGE fifo_send_uart_pkg IS
  ------------------------
  COMPONENT fifo_send_uart_exdes IS
    PORT (
-           CLK                       : IN  std_logic;
+           WR_CLK                    : IN  std_logic;
+     	   RD_CLK                    : IN  std_logic;
            WR_EN 		     : IN  std_logic;
            RD_EN                     : IN  std_logic;
            DIN                       : IN  std_logic_vector(8-1 DOWNTO 0);

@@ -15,9 +15,12 @@ architecture Behavioral of UART_send is
     
     signal clk_cyc : positive := 1;
     signal count : natural := data_width+2;
-    signal parity_bit : std_logic := '0';
+    signal parity_bit : std_logic := '1';
+    signal stored_data : std_logic_vector (data_width-1 downto 0);
     
 begin
+
+	-- In UART bit are sent LSBit first
     
     process(clk)
     
@@ -27,6 +30,7 @@ begin
             if en = '1' then
                 count <= 0;
                 rdy <= '0';
+                stored_data <= data;
             end if;
             
             if clk_cyc < divider then --clock_reducer
@@ -37,14 +41,14 @@ begin
                     tx_bit <= '0';
                     count <= count+1;
                 elsif count <= data_width then
-                    tx_bit <= data(count-1);
-                    if data(count-1) = '1' then
+                    tx_bit <= stored_data(count-1);
+                    if stored_data(count-1) = '1' then
                         parity_bit <= not parity_bit;
                     end if;
                     count <= count+1;
                 elsif count = data_width+1 then
                     tx_bit <= parity_bit;
-                    parity_bit <= '0';
+                    parity_bit <= '1';
                     count <= count+1;
                 else
                     tx_bit <= '1';
