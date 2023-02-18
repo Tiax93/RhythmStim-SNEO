@@ -49,12 +49,12 @@ Integer 1 | Integer 2 | Integer 3 | Integer 4
  0 | Timestamp | Amplitude | Channel
 
 #### UART
-Data is sent in little-endian via UART protocol without parity at 8 Data bits as in the table, with a BAUD rate of 1MHz that can be customized in the design. (spike_detector.vhd, line 203).
+Data is sent in little-endian and as in the table via UART protocol, using 8 data bits with even parity, 1 stop bit and a BAUD rate of 115200 (that can be customized in the design, spike_detector.vhd, line 203).
   27-bit  |   5-bit   
 ----------|-----------
 Timestamp |  Channel  
 
-The pin used for the UART communication is the 28th of the high-speed I/O port on the back of the recording unit (LVDS_1_P in the image below).
+UART communication uses the high-speed I/O port on the back of the recording unit and transmit/receive both in LVDS3.3 and LVCMOS3.3 mode, from the pins highlighted in the image below.
 
 ![Expansion_port](imgs/Expansion_port.png)
 
