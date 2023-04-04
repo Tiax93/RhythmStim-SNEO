@@ -257,9 +257,9 @@ begin
     generic map ( channels_number => channels,
                   rms_samples_exp => rms_samples_exp )
     port map ( clk => clk,
-               en => filtSG_done,filtSG_channel
+               en => filtSG_done,
                res => res,
-               channel_in => ,
+               channel_in => filtSG_channel,
                sample_in => filtSG_data,
                th_mult => th_mult_r,
                busy => MNEO_busy,
@@ -405,7 +405,7 @@ begin
 				-- Send in 4 bytes
                 if uart_byte = 1 then
                     wr_uart_fifo <= '1';
-                    din_uart_fifo <= &DT_reg(26 downto 19);
+                    din_uart_fifo <= "10"&DT_reg(24 downto 19);
                     uart_byte <= 2;
                 elsif uart_byte = 2 then
                     din_uart_fifo <= DT_reg(18 downto 11);
